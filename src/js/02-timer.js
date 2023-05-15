@@ -12,6 +12,32 @@ let countdownTimer = null;
 
 const padZero = number => String(number).padStart(2, '0');
 
+const updateCountdownUI = (
+  daysValue,
+  hoursValue,
+  minutesValue,
+  secondsValue
+) => {
+  days.textContent = padZero(daysValue);
+  hours.textContent = padZero(hoursValue);
+  minutes.textContent = padZero(minutesValue);
+  seconds.textContent = padZero(secondsValue);
+};
+
+const updateRemainingTime = timeDiff => {
+  const remainingDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  const remainingHours = Math.floor((timeDiff / (1000 * 60 * 60)) % 24);
+  const remainingMinutes = Math.floor((timeDiff / 1000 / 60) % 60);
+  const remainingSeconds = Math.floor((timeDiff / 1000) % 60);
+
+  updateCountdownUI(
+    remainingDays,
+    remainingHours,
+    remainingMinutes,
+    remainingSeconds
+  );
+};
+
 const startTimer = targetDate => {
   const updateTimer = () => {
     const timeDiff = targetDate - Date.now();
@@ -22,15 +48,7 @@ const startTimer = targetDate => {
       return;
     }
 
-    const remainingDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const remainingHours = Math.floor((timeDiff / (1000 * 60 * 60)) % 24);
-    const remainingMinutes = Math.floor((timeDiff / 1000 / 60) % 60);
-    const remainingSeconds = Math.floor((timeDiff / 1000) % 60);
-
-    days.textContent = padZero(remainingDays);
-    hours.textContent = padZero(remainingHours);
-    minutes.textContent = padZero(remainingMinutes);
-    seconds.textContent = padZero(remainingSeconds);
+    updateRemainingTime(timeDiff);
   };
 
   updateTimer();
@@ -44,17 +62,16 @@ flatpickr(dateTimePicker, {
   minuteIncrement: 1,
   onClose(selectedDates) {
     const selectedDate = selectedDates[0];
+    const currentDate = new Date();
 
-    if (selectedDate < new Date()) {
+    if (selectedDate.getTime() < currentDate.getTime()) {
       alert('Please choose a date in the future');
       startButton.disabled = true;
     } else {
       startButton.disabled = false;
-      startButton.addEventListener('click', () => {
-        startTimer(selectedDate);
-        startButton.disabled = true;
-        dateTimePicker.disabled = true;
-      });
+      startTimer(selectedDate);
+      dateTimePicker.disabled = true;
+      startButton.disabled = true;
     }
   },
 });
